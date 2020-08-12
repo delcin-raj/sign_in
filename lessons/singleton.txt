@@ -1,0 +1,24 @@
+1) Singleton is used in software development whe we want to get access to 
+stuff.
+
+2) Stuff -> Authentication, Database, Secure Storage, File System etc.,
+
+3) What are the different ways to get access to stuff?
+        - Global Access (Singleton)
+        - Dependency injection
+        - Scoped Access
+
+4) Global Access Properties:
+        - Very little code
+        - Tight coupling (All the pages written so far needs access to FirebaseAuth)
+        - Hard to write tests (Why?)
+        - Singletons are everywhere which is hard to refactor
+
+5) Dependency injection for rescue?
+    The idea of dependency injection is that if in future we decided to change
+    the implementation of signIn it is enough to make change to one class.
+    So we implement a Auth class separately and implement all the signIn methods 
+    inside the class. Then we create a custom generic user class so that we can wrap
+    the return type of the classes inside that. So that any other class which depends on
+    Auth class only needs Auth class. They don't have to know the internal implementations.
+    
