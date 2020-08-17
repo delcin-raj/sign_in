@@ -3,16 +3,26 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:sign_in/common_widgets/platform_exception_alert_dialog.dart';
 import 'package:sign_in/pages/sign_in/emai_sign_in_page.dart';
+import 'package:sign_in/pages/sign_in/sign_in_bloc.dart';
 import 'package:sign_in/pages/sign_in/sign_in_button.dart';
 import 'package:sign_in/services/auth.dart';
 
-class SignInPage extends StatefulWidget {
-  @override
-  _SignInPageState createState() => _SignInPageState();
-}
-
-class _SignInPageState extends State<SignInPage> {
-  bool _isLoading = false;
+class SignInPage extends StatelessWidget {
+  // If a constructor is defined const then all variables should be constant
+  final SignInBloc bloc;
+  const SignInPage({@required this.bloc});
+  static Widget create(BuildContext context) {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    return Provider<SignInBloc>(
+      dispose: (context, bloc) => bloc.dispose(),
+      create: (_) =>
+          SignInBloc(auth: auth), // it is the service that the child relies on
+      // this is probably the bloc object
+      child: Consumer<SignInBloc>(
+        builder: (context, bloc, child) => SignInPage(bloc: bloc),
+      ),
+    );
+  }
 
   void _showSignInError(BuildContext context, PlatformException exception) {
     PlatformExceptionAlertDialog(title: 'Sign In failed', exception: exception)
@@ -20,36 +30,25 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> _signInAnonymously(BuildContext context) async {
-    final auth = Provider.of<AuthBase>(context, listen: false);
     // awaits suspends execution until the future is served
     try {
-      setState(() => _isLoading = true);
       // Get a firebase anonymous
-      await auth.signInAnonymously();
+      await bloc.signInAnonymously();
     } on PlatformException catch (e) {
       // snackbar should come here
       if (e.code != 'ERROR_ABORTED_BY_USER') {
         _showSignInError(context, e);
       }
-    } finally {
-      if (this.mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
-    final auth = Provider.of<AuthBase>(context, listen: false);
     try {
-      setState(() => _isLoading = true);
-      await auth.signInWithGoogle();
+      await bloc.signInWithGoogle();
     } on PlatformException catch (e) {
       if (e.code != 'ERROR_ABORTED_BY_USER') {
         _showSignInError(context, e);
       }
-    }
-    if (this.mounted) {
-      setState(() => _isLoading = false);
     }
   }
 
@@ -66,22 +65,20 @@ class _SignInPageState extends State<SignInPage> {
         elevation: 4.0,
       ),
       // Is is a good idea to put anything inside a container
-      body: _isLoading
-          ? Center(
-              child: SizedBox(height: 50.0, child: CircularProgressIndicator()),
-            )
-          : _buildContent(context),
+      body: StreamBuilder(
+        stream: bloc.isLoadingStream,
+        initialData: false,
+        builder: (context, snapshot) {
+          return snapshot.data
+              ? Center(
+                  child: SizedBox(
+                      height: 50.0, child: CircularProgressIndicator()),
+                )
+              : _buildContent(context);
+        },
+      ),
       backgroundColor: Colors.grey[200],
     );
-  }
-
-  Widget display(BuildContext context) {
-    if (_isLoading) {
-      return SizedBox(
-          height: 50.0, child: Center(child: CircularProgressIndicator()));
-    } else {
-      return _buildContent(context);
-    }
   }
 
   Widget _buildContent(BuildContext context) {

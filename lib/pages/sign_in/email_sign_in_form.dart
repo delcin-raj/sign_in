@@ -35,7 +35,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     _passwordFocusNode.dispose();
   }
 
-  void _submit() async {
+  Future<void> _submit() async {
     // in stateful widget the context is always available
     setState(() {
       _isLoading = true;

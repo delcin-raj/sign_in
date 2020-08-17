@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sign_in/pages/sign_in/email_sign_in_form.dart';
+import 'package:sign_in/pages/sign_in/email_sign_in_form_with_block.dart';
 
 class EmailSignInPage extends StatelessWidget {
   @override
@@ -23,6 +23,6 @@ class EmailSignInPage extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    return EmailSignInForm();
+    return EmailSignInFormWithBlock.create(context);
   }
 }
